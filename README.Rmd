@@ -1,0 +1,95 @@
+---
+title: "Getting and Cleaning data - Course assignment"
+author: "Daniel S."
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+#Readme
+
+##Description
+The objective of this assignment was to write an R script to clean and organize a set of data collected by smartphone accelerometer and gyroscope measurements. This document will go over the lines in the script, explaining each step.
+
+The first step is to load the necessary libraries. `stringr` is employed for its useful character search functions, nad `dplyr` is used for some of the data cleaning and organization. 
+
+```{r}
+library(stringr)
+library(dplyr)
+```
+
+
+Next, the data needs to be loaded into R. These steps load the requisite text files as tables. There are two separate datasets, the testing data set and the training data set. Within each data set is a 'x' file, containing the different variables, and a 'y' file, containing a number corresponding to the type of activity for each measurement.
+
+```{r}
+data_x_train <- read.table("train/X_train.txt")
+data_x_test <- read.table("test/X_test.txt")
+data_y_test <- read.table("test/y_test.txt")
+data_y_train <- read.table("train/y_train.txt")
+```
+
+The subject files contain the information on which test subject corresponds to each measurement (or row in the respective test and train files)
+```{r}
+subject_test <- read.table("test/subject_test.txt")
+subject_train <- read.table("train/subject_train.txt")
+```
+
+Finally, `features.txt` and `activity_labels.txt` contain, respectively, a list of descriptive variable names (the column headers for the x data) and descriptors for the activity types (the numbers corresponding to the y data)
+```{r}
+features <- read.table("features.txt", stringsAsFactors = FALSE)
+activity_labels <- read.table("activity_labels.txt")
+```
+
+Part of having a tidy data set is descriptive column headers. In the following lines, the y data is given the header 'activity type', and the x data is given a header corresponding to the list in features.txt, and the subject vector is also given a title. 
+```{r}
+colnames(data_y_test) <- "activity_type"
+colnames(data_y_train) <- "activity_type"
+colnames(data_x_test) <- features$V2
+colnames(data_x_train) <- features$V2
+colnames(subject_test) <- "subject"
+colnames(subject_train) <- "subject"
+```
+
+The next step is to pare down the variables such that only the mean and the standard deviation variables are included. To accomplish this, the `grepl()` function is used to search for and include only column headers with '-mean' and 'std()'; the `"-mean\\b"` ends the search after 'mean', preventing additional column headers from being included.
+```{r}
+data_x_test <- data_x_test[,grepl("-mean\\b()|std()", colnames(data_x_test))]
+data_x_train <- data_x_train[,grepl("-mean\\b()|std()", colnames(data_x_train))]
+
+```
+
+
+Now the different data frames and vectors can be put together. cbind is used to append the subjects, activities, and measurements for the test and the training data.
+```{r}
+test_data <- cbind(subject_test, data_y_test, data_x_test)
+train_data <- cbind(subject_train, data_y_train, data_x_train)
+```
+
+...and rbind is used to append the test and train data tables to create one overall data set.
+```{r}
+full_data <- rbind(test_data, train_data)
+```
+
+This line replaces the numbers corresponding to the activity type with the actual description of that activity.
+```{r}
+full_data$activity_type <- activity_labels$V2[full_data$activity_type]
+```
+
+To create the tidy data set, dplyr pipes the full data set in two steps: the first step groups the data by subject and activity type. The second step summarizes all of the variables using mean() to take the average of the data across all of the variable columns for each measurement for each group.
+
+```{r}
+tidy_data <- full_data %>% group_by(subject, activity_type) %>% summarize_all(funs(mean))
+```
+
+To reflect that these variable names now reflect an average over several individual measurements, "avg_" is appended to the front of each of the variables.
+```{r}
+colnames(tidy_data)[-(1:2)] <- paste("avg_", colnames(tidy_data[-(1:2)]), sep = "")
+```
+
+Finally, the data set is exported to the source folder as a .txt file.
+```{r}
+#export the tidy dataset to a .csv file
+write.table(tidy_data, "coursera_course3_week4_tidydata.txt", row.name = FALSE)
+```
+
+

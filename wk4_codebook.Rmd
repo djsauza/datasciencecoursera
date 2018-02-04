@@ -1,0 +1,36 @@
+---
+title: "Code book"
+output: html_document
+---
+
+#Code book
+##Getting and cleaning data: week 4 assignment
+
+###Variables
+
+The following describes the variables contained within the tidy data set
+
+
+* "subject" : a number corresponding to the subject identity 
+* "activity_type" : a factor describing the type of activity conducted during the experiment. The factor has six levels; WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING.  
+
+The rest of the variables correspond to different measurements averaged over each subject and each activity. The following list describes how to read the coded information contained within each variable name:
+
+* avg_: reflects that the values in the tidy data set are averaged over multiple signal data, grouped by activity and subject. 
+* t: the measurement is in the time domain
+* f: the measurement is in the frequency domain, via application of a fast fourier transform
+* Body: the measurement is for a body acceleration signal
+* Gravity: the measurement is for a gravity acceleration signal
+* Acc: the measurement comes from the accelerometer
+* Gyro: the measurement comes from the gyroscope
+* Jerk: the measurement is for a Jerk signal
+* mean(): the measurement is the mean of the signal data
+* std(): the measurement is the standard deviation of the signal data
+* Mag: the measurement is the euclidian norm magnitude of the signal data
+* X: the measurement is the signal data in the X direction
+* Y: the measurement is the signal data in the Y direction
+* Z: the measurement is the signal data in the Z direction
+
+Applying the above, "**avg_tBodyAccJerk-mean()-X**", for example, becomes: "average body linear acceleration time domain jerk signal mean in X, from the accelerometer"
+
+
